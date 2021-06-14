@@ -4,7 +4,7 @@ import QueryExpansionList
 import Corpus
 import Bm25_scoring
 import Queries
-
+import Nxml_to_Xml
 
 class Main:
     """
@@ -83,9 +83,15 @@ class Main:
         bm25 = Bm25_scoring.BM25(corpus, delimiter=' ')
         bm25.getExpandedBM25Score(queries, document_id_list, query_id_list)
 
+    def nxmlConvert(self):
+        nxml_obj = Nxml_to_Xml.NxmlConversion("/home/iialab/Bhanu/PythonFiles/Sample_Trec_2016" , "/home/iialab/Bhanu/PythonFiles/sample_Trec_2016_output")
+        nxml_obj.convert_nxml_to_xml()
+        print("Conversion is Done")
+
 
 main_obj = Main()
 # main_obj.basicpreprocessing()
-main_obj.indexing()
+#main_obj.indexing()
 # main_obj.baseLineScoring()
 #main_obj.queryexapnsionscoring()
+main_obj.nxmlConvert()
