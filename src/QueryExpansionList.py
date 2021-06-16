@@ -41,8 +41,23 @@ class ExapndedQuery:
         return expansion_dataFrame
 
     def getGroupedData(self):
-        dataFrame = self.addColoumnToDataFrame()
-        grouped_list = list()
+        df = self.addColoumnToDataFrame()
+        #df = df.groupby(["group_topic_id"]).agg(lambda x: x.tolist())
+        queryConcept = df["query_concept"].tolist()
+        extendedConcept = df["extended_concept"].tolist()
+        df['combined'] = df[['query_concept', 'extended_concept']].agg('-'.join, axis=1)
+        df = df.groupby(['group_topic_id']).agg(lambda x: x.tolist())
+        combined = df['combined'].tolist()
+        for obj in combined:
+            for ele in obj:
+                spl = ele.split('-')
+                print(spl[0])
+                print(spl[1])
+        '''
+          for obj in combined:
+            spl = obj.split('-')
+            print(spl)
+               grouped_list = list()
         df1 = dataFrame.groupby(["group_topic_id"]).agg(lambda x: x.tolist())
         queryConcept = df1["query_concept"].tolist()
         extendedConcept = df1["extended_concept"].tolist()
@@ -51,3 +66,5 @@ class ExapndedQuery:
             queryString = ' '.join(map(str, (set(concept + extended))))
             grouped_list.append(queryId + " " + queryString)
         return list(grouped_list)
+        '''
+

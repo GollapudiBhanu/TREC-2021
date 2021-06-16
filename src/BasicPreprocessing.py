@@ -9,13 +9,18 @@ import xml.etree.ElementTree as ET
 import json
 import os
 import sys
+from pathlib import Path
+from nltk import text
 from nltk.corpus import stopwords
+from textblob import TextBlob
 from textblob import Word
 import nltk
 from nltk.stem import PorterStemmer
+from pandas import DataFrame
 from nltk.stem import WordNetLemmatizer
 
-
+nltk.download("wordnet")
+nltk.download('stopwords')
 class Preprocessing:
 
     def __init__(self, source_dir, dest_dir):
@@ -53,11 +58,12 @@ class Preprocessing:
                                "then", "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've",
                                "this", "those", "through", "to", "too", "under",
                                "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were",
-                               "weren't", "what", "what's", "when", "will," "when's", "where", "where's", "which", "while",
+                               "weren't", "what", "what's", "when", "will,"
+                                                                    "when's", "where", "where's", "which", "while",
                                "who", "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't",
                                "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves",
-                               "n't", "'re", "'ve", "'d", "'s", "'ll", "'m",',', '.', ':', ';', '?', '(', ')', '[', ']', '&',
-                               '!', '*', '@', '#', '$', '%']
+                               "n't", "'re", "'ve", "'d", "'s", "'ll", "'m",
+                               ',', '.', ':', ';', '?', '(', ')', '[', ']', '&', '!', '*', '@', '#', '$', '%']
         self.getRootJsonObjectForCorpus()
 
     def getDirectoryPath(self):
@@ -94,7 +100,6 @@ class Preprocessing:
         return " ".join(x for x in text_value.split() if x not in self.stopWords_list)
 
     def finalPreprocessing(self, text_value):
-        nltk.download('stopwords')
         all_stopwords = stopwords.words('english')
         return " ".join(x for x in text_value.split() if x not in all_stopwords)
 
@@ -230,7 +235,6 @@ class Preprocessing:
      '''
 
     def lemmatize(self):
-        nltk.download("wordnet")
         lemmatizationList = self.stemming()
         for words in lemmatizationList:
             for index, word in enumerate(words):
@@ -287,7 +291,6 @@ class Preprocessing:
     def getRootJsonObject(self):
         sub_dirs = os.listdir(self.source_dir)
         self.stopWords_list = self.addCommonWordsToStopList()
-        print(self.stopWords_list)
         for folder in sub_dirs:
             sub_folders = os.listdir(self.source_dir + '/' + folder)
             for sub_folder in sub_folders:

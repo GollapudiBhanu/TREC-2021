@@ -27,7 +27,7 @@ class creatCorpus:
         #self.sourceDir = "home/iialab/Bhanu/PythonFiles/FinalCode/TREC_2019_Basic_preprocessing"
         #root_folder = os.listdir(self.sourceDir)
         #total_count = len(root_folder)
-        return 306638
+        return 306238
 
     '''
         It returns the document name from the provided URL.
@@ -46,18 +46,12 @@ class creatCorpus:
         resultantString = ""
         try:
             res = self.es.get(index="2019-trec-precision-medicine", id=index)
-            for key, result in res['_source'].items():
+            for key, value in res['_source'].items():
                 if key == "url":
-                    self.__prepareDocId(result['url'])
-                if isinstance(result, dict):
-                    for _, value in result.items():
-                        if value is None:
-                            continue
-                    resultantString += value
-                elif result is None:
+                    self.__prepareDocId(value)
+                if value is None:
                     continue
-                else:
-                    resultantString += value
+                resultantString += value
             return resultantString
         except:
             print(str(index) + "error")
@@ -67,7 +61,7 @@ class creatCorpus:
     '''
 
     def prepareCorpus(self):
-        number_of_documents = self.__getTotalNumberOfFiles(100)
+        number_of_documents = self.__getTotalNumberOfFiles(2)
         corpus = list()
         for index in range(number_of_documents):
             document = self.__getdocumnetby(index + 1)

@@ -82,7 +82,8 @@ class BM25:
             data_frame = data_frame[data_frame['score'] > 0.0]
             data_frame_collection.append(data_frame)
         final = pd.concat(data_frame_collection)
-        final.to_csv('./Final_score.csv', index=False)
+        print("Final score")
+        final.to_csv('./Output/Final_score.csv', index=False)
 
     def getExpandedBM25Score(self, query_list, document_id_list, expanded_query_id_list=[]):
         data_frame_collection = list()
@@ -96,7 +97,7 @@ class BM25:
             data_frame = data_frame[data_frame['score'] > 0.0]
             data_frame_collection.append(data_frame)
         final = pd.concat(data_frame_collection)
-        final.to_csv('./Expanded_Final_score.csv', index=False)
+        final.to_csv('./Output/Expanded_Final_score.csv', index=False)
 
     '''
         Returns a count items in a list, with provided queryId. 

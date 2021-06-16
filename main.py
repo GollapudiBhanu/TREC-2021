@@ -5,6 +5,7 @@ import Corpus
 import Bm25_scoring
 import Queries
 import Nxml_to_Xml
+import Basicpreprocessing_2016
 
 class Main:
     """
@@ -88,10 +89,19 @@ class Main:
         nxml_obj.convert_nxml_to_xml()
         print("Conversion is Done")
 
+    def basicPreprocessing_2016(self):
+        preprocessing_obj = Basicpreprocessing_2016.Preprocessing_2016('/home/iialab/Bhanu/PythonFiles/2016_Trec_Basic_Input', './Data/TREC_2016_OutputData')
+        print("Corpus preparation is Done")
+        preprocessing_obj.getRootJsonObject()
+        print("Basic Preprocessing is done successfully.")
+
+
+
 
 main_obj = Main()
 # main_obj.basicpreprocessing()
 #main_obj.indexing()
 # main_obj.baseLineScoring()
 #main_obj.queryexapnsionscoring()
-main_obj.nxmlConvert()
+#main_obj.nxmlConvert()
+main_obj.basicPreprocessing_2016()

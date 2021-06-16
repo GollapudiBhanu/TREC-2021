@@ -25,16 +25,16 @@ If arguments count is lessthan 2, it throwes error.
 
 class Indexing:
 
-    def __int__(self, source_dir):
+    def __init__(self):
         self.es = Elasticsearch()
-        self.source_dir = source_dir
-        self.loadJsonDict()
+        self.source_dir = '/home/junhua/trec/FinalCode/TREC_2019_Basic_preprocessing'
 
     '''
     Set the default values for keys in the dict
     '''
 
     def setDefaultValuesForDict(self, data):
+        print("set defau;lt values")
         data.setdefault("download_date", None)
         data.setdefault("url", None)
         data.setdefault("link_text", None)
@@ -73,6 +73,7 @@ class Indexing:
     '''
 
     def prepareDict(self, data):
+        print("preparee dict")
         doc = {
             'download_date': self.getValue(data, "required_header", 0),
             'url': self.getValue(data, "required_header", 2),
@@ -131,6 +132,7 @@ class Indexing:
     '''
 
     def loadJsonDict(self):
+        print("Load json dict")
         sub_dirs = os.listdir(self.source_dir)
         index_value = 0
         for folder in sub_dirs:
@@ -143,6 +145,7 @@ class Indexing:
                     self.indexing(dict, index_value)
 
     def loadJson(self, sourceFile):
+        print("loadJson")
         jsonFile = open(sourceFile)
         data = {}
         data = json.load(jsonFile)
@@ -150,12 +153,12 @@ class Indexing:
         return data
 
     def indexing(self, data, index_value):
+        print("Indexing")
         doc = self.prepareDict(data)
         res = Elasticsearch().index(index="2019-trec-precision-medicine", id=int(index_value), body=doc)
         print("####################################")
         print(index_value)
         print(res['result'])
         print("####################################")
-
 
 
