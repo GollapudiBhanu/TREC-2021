@@ -1,10 +1,7 @@
 import pandas as pd
-import json
-import xml.etree.ElementTree as ET
 
 
 class ExapndedQuery:
-
     def __init__(self, query_path):
         self.query_path = query_path
 
@@ -15,6 +12,10 @@ class ExapndedQuery:
     def getTopicIDList(self):
         expansion_dataframe = self.readfile()
         topic_id_list = expansion_dataframe['TopicID']
+        return topic_id_list
+
+    def getTopicIDList1(self, df):
+        topic_id_list = df['group_topic_id']
         return topic_id_list
 
     def groupByTopicId(self):
@@ -42,29 +43,18 @@ class ExapndedQuery:
 
     def getGroupedData(self):
         df = self.addColoumnToDataFrame()
-        #df = df.groupby(["group_topic_id"]).agg(lambda x: x.tolist())
-        queryConcept = df["query_concept"].tolist()
-        extendedConcept = df["extended_concept"].tolist()
-        df['combined'] = df[['query_concept', 'extended_concept']].agg('-'.join, axis=1)
+        df['query_concept'] = df["query_concept"].astype(str)
+        df['new_extended'] = df['new_extended'].astype(str)
+        df['combined'] = df[['query_concept', 'new_extended']].agg('-'.join, axis=1)
+        df['Topics'] = df['group_topic_id']
         df = df.groupby(['group_topic_id']).agg(lambda x: x.tolist())
         combined = df['combined'].tolist()
-        for obj in combined:
-            for ele in obj:
-                spl = ele.split('-')
-                print(spl[0])
-                print(spl[1])
-        '''
-          for obj in combined:
-            spl = obj.split('-')
-            print(spl)
-               grouped_list = list()
-        df1 = dataFrame.groupby(["group_topic_id"]).agg(lambda x: x.tolist())
-        queryConcept = df1["query_concept"].tolist()
-        extendedConcept = df1["extended_concept"].tolist()
-        query_id_List = self.removeDuplicates()
-        for queryId, concept, extended in zip(query_id_List, queryConcept, extendedConcept):
-            queryString = ' '.join(map(str, (set(concept + extended))))
-            grouped_list.append(queryId + " " + queryString)
-        return list(grouped_list)
-        '''
+        topic_id_lsit = df['Topics'].tolist()
+        topics = self.getTopicIdList(topic_id_lsit)
+        return combined, topics
 
+    def getTopicIdList(self, topic_id_lsit):
+        topics = list()
+        for topic_list in topic_id_lsit:
+            topics.append(topic_list[0])
+        return topics

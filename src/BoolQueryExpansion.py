@@ -1,100 +1,37 @@
 from elasticsearch import Elasticsearch
-import QueryExpansionList
 
-
-class GetBoolQuery_2016:
-    def __init__(self, querys):
-        self.query_list = querys
+class GetBoolQueryExpansion:
+    def __init__(self, combined_query_list, search_index):
+        self.combined_query_list = combined_query_list
         self.es = Elasticsearch()
-        self.query()
+        self.search_index = search_index
+        self.score_list = list()
 
-    def query(self):
+    def getScores(self):
         disease = ""
         gene = ""
-        score_list = []
-        for query in self.query_list:
+        for query in self.combined_query_list:
             if query[0] is not None:
                 disease = query[0].split('-')
             if query[1] is not None:
                 gene = query[1].split('-')
+            diseaseString = ",".join(disease)
+            geneString = ",".join(gene)
+            combinedString = diseaseString + ',' + geneString
             query_body = {
                 'query': {
                     'bool': {
-                        'filter': {
-                            'bool': {
-                                'must': [{
-                                    'bool': {
-                                        'should': [{
-                                            'terms': {
-                                                'journal-title': disease
-                                            },
-                                            'terms': {
-                                                'article-type': disease
-                                            },
-                                            'terms': {
-                                                'article-title': disease
-                                            },
-                                            'terms': {
-                                                'abstract': disease
-                                            },
-                                            'terms': {
-                                                'keywords': disease
-                                            },
-                                            'terms': {
-                                                'subheading': disease
-                                            },
-                                            'terms': {
-                                                'introduction': disease
-                                            },
-                                            'terms': {
-                                                'conclusion': disease
-                                            }
-                                        }]
-                                    },
-                                    'bool': {
-                                        'should': [{
-                                            'terms': {
-                                                'journal-title': gene
-                                            },
-                                            'terms': {
-                                                'article-type': gene
-                                            },
-                                            'terms': {
-                                                'article-title': gene
-                                            },
-                                            'terms': {
-                                                'abstract': gene
-                                            },
-                                            'terms': {
-                                                'keywords': gene
-                                            },
-                                            'terms': {
-                                                'subheading': gene
-                                            },
-                                            'terms': {
-                                                'introduction': gene
-                                            },
-                                            'terms': {
-                                                'conclusion': gene
-                                            }
-                                        }]
-                                    },
-
-                                }]
-                            }
-                        }
+                        'should': [
+                            {'match': {'brief_title': combinedString}},
+                            {'match': {'official_title': combinedString}},
+                            {'match': {'brief_summary_text_block': combinedString}},
+                            {'match': {'detailed_description_text_block': combinedString}},
+                        ],
+                        "minimum_should_match": 1
                     }
                 }
             }
-            query_result = self.es.search(index="2016-trec-precision-medicine", body=query_body, size=1000)
-            score_list.append(query_result)
-        for result in score_list:
-            url = list()
-            score = list()
-            for res in result['hits']['hits']:
-                print(res['_source']['url'])
-                print(res['_score'])
+            query_result = self.es.search(index=self.search_index, body=query_body, size=1000)
+            self.score_list.append(query_result)
+        return self.score_list
 
-expanded_query = QueryExpansionList.ExapndedQuery('./Data/topics2019_expanded.csv')
-query_list = expanded_query.getGroupedData()
-query_obj = GetBoolQuery_2016(query_list)
