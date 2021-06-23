@@ -26,7 +26,7 @@ class Save:
     '''
 
     def __prepareDocId(self, url):
-        head, tail = os.path.split(url)
+        head, tail = url.split("httpsclinicaltrialsgovshow")
         return tail
 
     def getQueryIdList(self, query_id, count):

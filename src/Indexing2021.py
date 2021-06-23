@@ -23,7 +23,7 @@ If arguments count is lessthan 2, it throwes error.
 '''
 
 
-class Indexing:
+class Indexing_2021:
 
     def __init__(self, source_dir, index_name):
         self.es = Elasticsearch()
@@ -87,6 +87,12 @@ class Indexing:
             'source': data['source'],
             'brief_summary_text_block': self.getValue(data, "brief_summary", 0),
             'detailed_description_text_block': self.getValue(data, "detailed_description", 0),
+            'primary_outcome_measure': self.getValue(data, "primary_outcome", 0),
+            'primary_outcome_description': self.getValue(data, "primary_outcome", 2),
+            'secondary_outcome_measure': self.getValue(data, "secondary_outcome", 0),
+            'secondary_outcome_description': self.getValue(data, "secondary_outcome", 2),
+            'arm_group_description': self.getValue(data, "arm_group", 2),
+            'intervention_description': self.getValue(data, "intervention", 2),
             'start_date': data['start_date'],
             'primary_completion_date': data['primary_completion_date'],
             'study_type': data['study_type'],
@@ -108,7 +114,7 @@ class Indexing:
             'keyword': data['keyword'],
             'mesh_term': self.getValue(data, "condition_browse", 0),
             'intervention_browse_0_mesh_term': self.getValue(data, "intervention_browse", 0),
-            'intervention_browse_1_mesh_term': self.getValue(data, "intervention_browse", 1)
+            'intervention_browse_1_mesh_term': self.getValue(data, "intervention_browse", 1),
         }
         doc['concat_string'] = self.prepareConcatString(doc)
         return doc
@@ -118,7 +124,8 @@ class Indexing:
         oTitle = doc['official_title']
         bSummary = doc['brief_summary_text_block']
         bDescription = doc['detailed_description_text_block']
-
+        pDescription = doc['primary_outcome_description']
+        sDescription = doc['secondary_outcome_description']
         if bTitle is None:
             bTitle = ""
         if oTitle is None:
@@ -127,8 +134,12 @@ class Indexing:
             bSummary = ""
         if bDescription is None:
             bDescription = ""
+        if pDescription is None:
+            pDescription = ""
+        if sDescription is None:
+            sDescription = ""
 
-        return bTitle + " " + oTitle + " " + bSummary + " " + bDescription
+        return bTitle + " " + oTitle + " " + bSummary + " " + bDescription + " "+ pDescription + " " + sDescription
 
     '''
         It returns the value for the provided key in the dict, if there is no key 

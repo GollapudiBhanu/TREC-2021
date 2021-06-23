@@ -1,6 +1,4 @@
 import pandas as pd
-import json
-import xml.etree.ElementTree as ET
 
 
 class NewExapndedQuery:
@@ -46,10 +44,6 @@ class NewExapndedQuery:
         df1 = dataFrame.groupby(["group_topic_id"]).agg(lambda x: x.tolist())
         queryConcept = df1["query_concept"].tolist()
         extendedConcept = df1["extended_concept"].tolist()
-        print("#########################")
-        print(queryConcept)
-        print("############################################")
-        print(extendedConcept)
         query_id_List = self.removeDuplicates()
         for queryId, concept, extended in zip(query_id_List, queryConcept, extendedConcept):
             queryString = ' '.join(map(str, (set(concept + extended))))

@@ -1,24 +1,17 @@
-"""
-To Run the Script:
-$ python3 [source directory of collection] [destination directory]
-     Example:
-     $ python3 /home/iialab/Downloads/Preprocessing.py /home/iialab/Downloads/clinical_trials.0 /home/iialab/Downloads/clinical_trials_new
-"""
-
-import xml.etree.ElementTree as ET
-import json
-import os
-import sys
+import numpy as np
 from nltk.corpus import stopwords
-from textblob import Word
 import nltk
 from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
-import numpy as np
+import os
+import xml.etree.ElementTree as ET
+import json
+
 
 nltk.download("wordnet")
 nltk.download('stopwords')
-class Preprocessing:
+
+class PreProcessing1:
 
     def __init__(self, source_dir, dest_dir):
         self.source_dir = source_dir
@@ -27,14 +20,13 @@ class Preprocessing:
         self.corpus = []
         self.commonWords = []
         self.stopWords_list = ["disease", "diseases", "disorder", "symptom", "symptoms", "drug", "drugs", "problems",
-                               "problem", "prob", "probs",
-                               "med", "meds", "pill", "pills", "medicine", "medicines", "medication", "medications",
-                               "treatment", "treatments", "caps", "capsules",
+                               "problem", "prob", "probs","med", "meds", "pill", "pills", "medicine", "medicines",
+                               "medication", "medications","treatment", "treatments", "caps", "capsules",
                                "capsule", "tablet", "tablets", "tabs", "doctor", "dr", "dr.", "doc", "physician",
-                               "physicians", "test", "tests", "testing", "specialist",
-                               "specialists", "side-effect", "side-effects", "pharmaceutical", "pharmaceuticals",
-                               "pharma", "diagnosis", "diagnose", "diagnosed", "exam",
-                               "challenge", "device", "condition", "conditions", "suffer", "suffering", "suffered",
+                               "physicians", "test", "tests", "testing", "specialist","specialists", "side-effect",
+                               "side-effects", "pharmaceutical", "pharmaceuticals",
+                               "pharma", "diagnosis", "diagnose", "diagnosed", "exam","challenge",
+                               "device", "condition", "conditions", "suffer", "suffering", "suffered",
                                "feel", "feeling", "prescription", "prescribe",
                                "prescribed", "over-the-counter", "otc", "a", "about", "above", "after", "again",
                                "against", "all", "am", "an", "and", "any", "are",
@@ -55,69 +47,109 @@ class Preprocessing:
                                "then", "there", "there's", "these", "they", "they'd", "they'll", "they're", "they've",
                                "this", "those", "through", "to", "too", "under",
                                "until", "up", "very", "was", "wasn't", "we", "we'd", "we'll", "we're", "we've", "were",
-                               "weren't", "what", "what's", "when", "will","when's", "where", "where's", "which", "while",
-                               "who", "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't",
+                               "weren't", "what", "what's", "when", "will", "when's", "where", "where's", "which",
+                               "while","who", "who's", "whom", "why", "why's", "with", "won't", "would", "wouldn't",
                                "you", "you'd", "you'll", "you're", "you've", "your", "yours", "yourself", "yourselves",
-                               "n't", "'re", "'ve", "'d", "'s", "'ll", "'m",
-                               ',', '.', ':', ';', '?', '(', ')', '[', ']', '&', '!', '*', '@', '#', '$', '%']
-        all_stopwords = stopwords.words('english')
-        self.stopWords_list.append(all_stopwords)
-        self.getRootJsonObjectForCorpus()
-
-    def getDirectoryPath(self):
-        if len(sys.argv) < 3:
-            print('[ERROR] Incomplete number of arguements')
-        elif len(sys.argv) >= 3:
-            self.source_dir = sys.argv[1]
-            self.dest_dir = sys.argv[2]
+                               "n't", "'re", "'ve", "'d", "'s", "'ll", "'m",',', '.', ':', ';', '?', '(', ')', '[', ']',
+                               '&', '!', '*', '@', '#', '$', '%']
         self.getRootJsonObjectForCorpus()
 
     '''
-        1. It converts provided text to lowercase.
-        2. It removes the punctuation.
-        3. It removes the stopWords from the text.
-
+            It removes all spaces
     '''
 
-    def preProcessingText(self, text_value):
-        if text_value is None:
-            return ""
-        text_value = self.lowerCase(text_value)
-        text_value = self.removePunctuation(text_value)
-        text_value = self.remove_apostrophe(text_value)
-        text_value = self.remove_single_characters(text_value)
-        text_value = self.removeStopwords(text_value)
-        return text_value
+    def remove_spaces(self, text_value):
+        new_text_value = ""
+        print("Bhanu")
+        new = text_value.strip()
+        print(new)
+        for text in text_value:
+            print(len(text))
+            print(type(text))
+            print(text == '')
+            new_text_value += text.replace(" ", "")
+        print(new_text_value)
+        return  new_text_value
 
-    def lowerCase(self, text_value):
-        return " ".join(x.lower() for x in text_value.split())
+    '''
+        It converts string to lower case
+    '''
+    def convert_lower_case(self, text_value):
+        return np.char.lower(text_value)
 
-    def removePunctuation(self, text_value):
+    '''
+        Removes Punctuation from string
+    '''
+
+    def remove_punctuation(self, text_value):
         punc_symbols = "!\"#$%&()*+-.,/:;<=>?@[\]^_`{|}~\n"
         for symbol in punc_symbols:
-            text_value = np.char.replace(text_value, symbol, '')
-        return text_value.tolist()
+            text_value = np.char.replace(text_value, symbol, ' ')
+        return text_value
 
+    '''
+        It removes apostrophe from the string
+    '''
     def remove_apostrophe(self, text_value):
-        return text_value.replace("'", "")
+        return np.char.replace(text_value, "'", "")
 
     '''
         It removes the single character from the text
     '''
-
     def remove_single_characters(self, text_value):
         new_text = ""
-        for w in text_value.split():
+        text_value_list = text_value.tolist()
+        for w in text_value_list.split():
             if len(w) > 1:
                 new_text = new_text + " " + w
         return new_text
 
-    def removeStopwords(self, text_value):
+    '''
+        It removes the stopwords from the list
+    '''
+    def remove_stopwords(self, text_value):
+        all_stopwords = stopwords.words('english')
+        self.stopWords_list.append(all_stopwords)
         return " ".join(x for x in text_value.split() if x not in self.stopWords_list)
 
+
     '''
-          It returns list of words from the documentData.
-     '''
+        Perform the Lemmitaization
+    '''
+    def perform_lemmatization(self, text_value_list):
+        wordnet_lemmatizer = WordNetLemmatizer()
+        result = list()
+        for text_vale in text_value_list[0]:
+            lem_text_value = ""
+            for word in text_vale.split():
+                lem_word = wordnet_lemmatizer.lemmatize(word)
+                if lem_text_value is "":
+                    lem_text_value += lem_word
+                else:
+                    lem_text_value = lem_text_value + " " + lem_word
+            result.append(lem_text_value)
+        return result
+
+    '''
+        Perform Stemming 
+    '''
+    def perform_stemming(self, text_value_list):
+        st = PorterStemmer()
+        result = list()
+        for text_value in text_value_list:
+            stem_text_value = ""
+            for word in text_value.split():
+                stem = st.stem(word)
+                if stem_text_value is "":
+                    stem_text_value += stem
+                else:
+                    stem_text_value = stem_text_value + " " + stem
+                result.append(stem_text_value)
+        return result
+
+    '''
+        It returns list of words from the documentData.
+    '''
 
     def tokenization(self):
         singleWordList = [
@@ -134,7 +166,7 @@ class Preprocessing:
         return singleWordList
 
     '''
-          It returns list of list words, whose count of frequency of words is grater than 1.
+        It returns list of list words, whose count of frequency of words is grater than 1.
     '''
 
     def getCorpusList(self):
@@ -149,7 +181,7 @@ class Preprocessing:
         return texts
 
     '''
-          It returns the Most commonly used words from the corpus.
+        It returns the Most commonly used words from the corpus.
     '''
 
     def getCommonWords(self):
@@ -161,7 +193,7 @@ class Preprocessing:
         return ret_list
 
     '''
-          It returns the Most commonly used words from the corpus, with their frquency.
+        It returns the Most commonly used words from the corpus, with their frquency.
     '''
 
     def getCommonfrequencyWords(self):
@@ -174,8 +206,8 @@ class Preprocessing:
         return freq
 
     '''
-          1. Get commonWords from corpus.
-          2. Sort the values based on the frequency and return the sorted list.
+        1. Get commonWords from corpus.
+        2. Sort the values based on the frequency and return the sorted list.
     '''
 
     def getTopFrequencyItems(self, number):
@@ -187,16 +219,16 @@ class Preprocessing:
         return ret_list[0:number]
 
     '''
-          Get the commonWords and add them to stop_word list.
+        Get the commonWords and add them to stop_word list.
     '''
 
     def addCommonWordsToStopList(self):
-        top_freq_list = self.getTopFrequencyItems(5)
+        top_freq_list = self.getTopFrequencyItems(1000)
         common_stop_word_list = self.stopWords_list + top_freq_list
         return common_stop_word_list
 
     '''
-          It converts List to string and returns string value
+        It converts List to string and returns string value
 
     '''
 
@@ -205,77 +237,29 @@ class Preprocessing:
         return convertList
 
     '''
-          Perform Stemming of words.
-    '''
-
-    def stemming(self):
-        commonList = self.getCorpusList()
-        st = PorterStemmer()
-        for document in commonList:
-            for place, data in enumerate(document):
-                document[place] = "".join([st.stem(word) for word in data.split()])
-        return commonList
+        1. It converts provided text to lowercase.
+        2. It removes the punctuation.
+        3. It removes the stopWords from the text.
 
     '''
-          Perform Stemming of words.
-    '''
 
-    def objectStemming(self):
-        commonList = self.tokenization()
-        st = PorterStemmer()
-        for document in commonList:
-            for place, data in enumerate(document):
-                document[place] = "".join([st.stem(word) for word in data.split()])
-        return commonList
-
-    def combineTokenList(self, stemList):
-        out = ""
-        for word in stemList:
-             out = out + " ".join(word)
-        print(out)
-        return out
+    def preProcessingText(self, text_value):
+        if text_value is None:
+            return ""
+        print(len(text_value))
+        print(text_value)
+        text_value = self.remove_spaces(text_value)
+        text_value = self.convert_lower_case(text_value)
+        text_value = self.remove_punctuation(text_value)
+        text_value = self.remove_apostrophe(text_value)
+        text_value = self.remove_single_characters(text_value)
+        text_value = self.remove_stopwords(text_value)
+        return text_value
 
     '''
-        1.getCommonWords
-        2.Perform lemmatization by using WordNetLemmatizer.
-    '''
-
-    def lemmatization(self, stemList):
-        wordnet_lemmatizer = WordNetLemmatizer()
-        for words in stemList:
-            for index, word in enumerate(words):
-                words[index] = " ".join(
-                    [wordnet_lemmatizer.lemmatize(word) for word in word.split()])
-        return stemList
-
-    '''
-          1. getCommonWords
-          2. Perform lemmatization by using NLTK Word.
-    '''
-
-    def lemmatize(self):
-        lemmatizationList = self.stemming()
-        for words in lemmatizationList:
-            for index, word in enumerate(words):
-                words[index] = " ".join([Word(word).lemmatize() for word in word.split()])
-        return lemmatizationList
-
-    '''
-        Perform Stemming 
-    '''
-
-    def perform_stemming(self, lem_list):
-        st = PorterStemmer()
-        for words in lem_list:
-            for index, word in enumerate(words):
-                words[index] = " ".join(
-                    [st.stem(word) for word in word.split()])
-        return lem_list
-
-    '''
-          1. Get commonWords from corpus and add them to stopWordsList.
-          2. Preprocess the text_value.
-          3. Apply lemmatization for Tokenized words in the List.
+        1. Get commonWords from corpus and add them to stopWordsList.
+        2. Preprocess the text_value.
+        3. Apply lemmatization for Tokenized words in the List.
     '''
 
     def valuePreprocessing(self, text_value):
@@ -283,39 +267,18 @@ class Preprocessing:
             return ""
         self.documentData.clear()
         pre_proceed_text_value = self.preProcessingText(text_value)
-        print(pre_proceed_text_value)
         self.documentData.append(pre_proceed_text_value)
         tokens_list = self.valueTokenization()
-        stem_out_put = self.perform_stemming(tokens_list)
-        lem_out_put = self.lemmatization(stem_out_put)
-        for output in lem_out_put:
+        lem_out_put = self.perform_lemmatization(tokens_list)
+        stem_out_put = self.perform_stemming(lem_out_put)
+        data = self.remove_punctuation(stem_out_put)
+        for output in data:
             return ' '.join(map(str, output))
 
     '''
-          1. List out all sub-directories
-          2. Enumearte all folders and retrieve all xml files.
-          3. Using ET, parse the root object from XML file.
-    '''
-
-    def getRootJsonObjectForCorpus(self):
-        sub_dirs = os.listdir(self.source_dir)
-        self.stopWords_list = self.addCommonWordsToStopList()
-        for folder in sub_dirs:
-            sub_folders = os.listdir(self.source_dir + '/' + folder)
-            for sub_folder in sub_folders:
-                trec_dir = self.dest_dir + '/' + folder + '/' + sub_folder
-                if not os.path.exists(trec_dir):
-                    os.makedirs(trec_dir)
-                xml_files = os.listdir(self.source_dir + '/' + folder + '/' + sub_folder)
-                for file in xml_files:
-                    tree = ET.parse(self.source_dir + '/' + folder + '/' + sub_folder + '/' + file)
-                    root = tree.getroot()
-                    self.corpusPrepration(root)
-
-    '''
-          1. List out all sub-directories
-          2. Enumearte all folders and retrieve all xml files.
-          3. Using ET, parse the root object from XML file.
+        1. List out all sub-directories
+        2. Enumearte all folders and retrieve all xml files.
+        3. Using ET, parse the root object from XML file.
     '''
 
     def getRootJsonObject(self):
@@ -340,9 +303,35 @@ class Preprocessing:
                     self.prepareJsonObject(root, output_file_path)
 
     '''
-          1. It appends the key value pairs in to data dict.
-          2. Prepares a JSON_Object
-          3. Write the JSON object in to output file.
+        1. List out all sub-directories
+        2. Enumearte all folders and retrieve all xml files.
+        3. Using ET, parse the root object from XML file.
+    '''
+
+    def getRootJsonObjectForCorpus(self):
+        sub_dirs = os.listdir(self.source_dir)
+        for folder in sub_dirs:
+            sub_folders = os.listdir(self.source_dir + '/' + folder)
+            for sub_folder in sub_folders:
+                trec_dir = self.dest_dir + '/' + folder + '/' + sub_folder
+                if not os.path.exists(trec_dir):
+                    os.makedirs(trec_dir)
+                xml_files = os.listdir(self.source_dir + '/' + folder + '/' + sub_folder)
+                for file in xml_files:
+                    tree = ET.parse(self.source_dir + '/' + folder + '/' + sub_folder + '/' + file)
+                    root = tree.getroot()
+                    self.corpusPrepration(root)
+
+    def isDirectoy(self, path):
+        return os.path.isdir(path)
+
+    def isFile(self, path):
+        return os.path.isfile(path)
+
+    '''
+        1. It appends the key value pairs in to data dict.
+        2. Prepares a JSON_Object
+        3. Write the JSON object in to output file.
 
     '''
 
@@ -351,14 +340,13 @@ class Preprocessing:
         for subRootElement in root:
             data[subRootElement.tag] = []
             if len(subRootElement) == 0:
-                if subRootElement.tag == "brief_title" or "article-title" or "abstract" or "introduction" or "conclusion" or "official_title":
-                    value = self.valuePreprocessing(subRootElement.text)
-                    data[subRootElement.tag] = value
-                else:
+                if subRootElement.tag != "brief_title" or "article-title" or "abstract" or "introduction" or "conclusion":
                     data[subRootElement.tag] = subRootElement.text
+                else:
+                    data[subRootElement.tag] = self.valuePreprocessing(subRootElement.text)
             for j in subRootElement:
                 j_value = j.text
-                if j.tag == "textblock" or "article-title" or "abstract" or "introduction" or "conclusion" or "brief_title" or "official_title" or "description":
+                if j.tag == "textblock" or "article-title" or "abstract" or "introduction" or "conclusion":
                     j_value = self.valuePreprocessing(j_value)
                 data[subRootElement.tag].append({
                     j.tag: j_value
@@ -368,9 +356,9 @@ class Preprocessing:
             outfile.write(json_object)
 
     '''
-          1. It appends the key value pairs in to data dict.
-          2. Prepares a JSON_Object
-          3. Prepares corpus(documentData) with all files data.
+        1. It appends the key value pairs in to data dict.
+        2. Prepares a JSON_Object
+        3. Prepares corpus(documentData) with all files data.
 
     '''
 
@@ -397,3 +385,15 @@ class Preprocessing:
                     else:
                         fileData.append(str(value))
         self.corpus.append(self.listToString(fileData))
+
+
+#basic_preprocessing = PreProcessing1('./Data/TREC_2019_input_data', './Data/TREC_2019_Output_data')
+basic_preprocessing = PreProcessing1('/home/junhua/trec/Trec2021/Data/SampleinputData', '/home/junhua/trec/Trec2021/Data/Sampleoutputdata')
+basic_preprocessing.getRootJsonObject()
+
+
+
+
+
+
+

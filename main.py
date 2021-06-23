@@ -11,6 +11,10 @@ import BasicPreprocessing_2016
 import Indexing2016
 import SaveScore
 import BoolQueryExpansion
+import Query2021
+import BoolQuery_score
+import CombinedQuery
+import SaveCombineScore
 
 
 class Main:
@@ -163,10 +167,10 @@ class Main:
         Save Elasticsearch scores in file
     '''
     def getScoresUsingBoolQuery_2019(self):
-        bool_query_results = self.getScoresusingBoolQuery("./Data/2019_quries/topics2019.xml", "2019-trec-precision-medicine")
+        bool_query_results = self.getScoresusingBoolQuery("./Data/2019_quries/topics2019.xml", "2019-trec-precision-medicine-final")
         score_list = bool_query_results[0]
         query_id_list = bool_query_results[1]
-        _ = SaveScore.Save("./Output/BoolQuery_scores_2019.csv", query_id_list, score_list)
+        _ = SaveScore.Save("./Output/AND_BoolQuery_scores_2019-final.csv", query_id_list, score_list)
         print("*...scores saved successfully...*")
 
     '''
@@ -189,11 +193,69 @@ class Main:
         query_id_list = expanded_query_results[1]
 
         exp_bool_query_obj = BoolQueryExpansion.GetBoolQueryExpansion(expanded_query_results[0],
-                                                                      "2019-trec-precision-medicine")
+                                                                      "2019-trec-precision-medicine-final")
         scores = exp_bool_query_obj.getScores()
         _ = SaveScore.Save("./Output/ClinicalBert_ExpandedBoolQuery_scores_2019.csv", query_id_list, scores)
 
         print("*...Exapnded scores saved successfully...*")
+
+
+    '''
+        which returns tuple for Queries and QueryIdList
+    '''
+    def getQueries(self, query_file_path):
+        extract_query = Query2021.ExtractQueries(query_file_path)
+        return extract_query.getQueries()
+
+    def getScoresusingBoolQuery_2021(self, query_file_path, search_index):
+        query_res = self.getQueries(query_file_path)
+        query_list = query_res[1]
+        query_id_list = query_res[0]
+        bool_score = BoolQuery_score.BoolQueryScore(query_list, query_id_list, search_index)
+        bool_results = bool_score.getScore()
+        query_id_list = bool_results[1]
+        score_list = bool_results[0]
+        _ = SaveScore.Save("./Output/BoolQuery_scores_2021.csv", query_id_list, score_list)
+        print("*...scores saved successfully...*")
+
+    '''./Data/2021Quries/Query_keywords_2021.csv'
+            Save Elasticsearch scores in file
+    '''
+
+    def getScoresUsingBoolQuery_20211(self):
+        bool_query_results = self.getScoresusingBoolQuery("./Data/2021Quries/Query_keywords_2021.csv",
+                                                          "2020-trec-precision-medicine")
+        score_list = bool_query_results[0]
+        query_id_list = bool_query_results[1]
+        _ = SaveScore.Save("./Output/BoolQuery_scores_2019.csv", query_id_list, score_list)
+        print("*...scores saved successfully...*")
+
+    def getScoresusingCombinedBoolQuery(self, source_file, search_index):
+        bool_query = CombinedQuery.GetCombinedBoolQuery(source_file)
+        results_list = bool_query.prepareBoolQuery(search_index)
+        return results_list
+
+    def getScoreUsingCombinedQuery_2019(self):
+        combine_query_results = self.getScoresusingCombinedBoolQuery("./Data/2019_quries/topics2019.xml",
+                                                          "2019-trec-precision-medicine-final")
+
+        and_bool_results = combine_query_results[0]
+        or_bool_results = combine_query_results[1]
+
+        and_bool_results_score = and_bool_results[0]
+        and_bool_results_id = and_bool_results[1]
+
+        or_bool_results_score = or_bool_results[0]
+        or_bool_results_id = or_bool_results[1]
+        _ = SaveCombineScore.Savecombine('./Output/combined_BoolQuery_scores_2019.csv',
+                                         and_bool_results_score,
+                                         or_bool_results_score,
+                                         and_bool_results_id,
+                                         or_bool_results_id)
+
+        print("*...scores saved successfully...*")
+
+
 
 
 main_obj = Main()
@@ -211,8 +273,14 @@ main_obj = Main()
 #main_obj.basicpreprocessing_2021()
 #main_obj.indexing('./Data/TREC_2021_Basicpreprocessing_output', "2021-trec-precision-medicine_final")
 #main_obj.getScoresUsingQueryExpanison_2019()
-bool_query_results = main_obj.getScoresusingBoolQuery("./Data/2019_quries/topics2019.xml", "2019-trec-precision-medicine")#main_obj.getScoresWithElasticSearchUsingBoolQuery_2019()
+#bool_query_results = main_obj.getScoresusingBoolQuery("./Data/2019_quries/topics2019.xml", "2019-trec-precision-medicine")#main_obj.getScoresWithElasticSearchUsingBoolQuery_2019()
 #main_obj.getScoresUsingBoolQuery_2019()
 #main_obj.getScoresUsingBoolQueryExpanison_2019()
 #main_obj.getScoresUsingClinicalBertBoolQueryExpanison_2019()
-
+#main_obj.getScoresusingBoolQuery_2021('./Data/2021Quries/Query_keywords_2021.csv',
+                                      #'2021-trec-precision-medicine')
+#basic_preprocessing = Preprocessing('/home/junhua/trec/Trec2021/Data/TREC_2019_input_data', '/home/junhua/trec/Trec2021/Data/TREC_2019_Output_data')
+#basic_preprocessing.getRootJsonObject()
+#main_obj.indexing('./Data/TREC_2019_Output_data',"2019-trec-precision-medicine-final")
+#main_obj.getScoresUsingBoolQuery_2019()
+main_obj.getScoreUsingCombinedQuery_2019()

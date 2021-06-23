@@ -1,6 +1,5 @@
 import pandas as pd
 
-
 class ExapndedQuery:
     def __init__(self, query_path):
         self.query_path = query_path
@@ -44,8 +43,8 @@ class ExapndedQuery:
     def getGroupedData(self):
         df = self.addColoumnToDataFrame()
         df['query_concept'] = df["query_concept"].astype(str)
-        df['new_extended'] = df['new_extended'].astype(str)
-        df['combined'] = df[['query_concept', 'new_extended']].agg('-'.join, axis=1)
+        df['extended_concept'] = df['extended_concept'].astype(str)
+        df['combined'] = df[['query_concept', 'extended_concept']].agg('-'.join, axis=1)
         df['Topics'] = df['group_topic_id']
         df = df.groupby(['group_topic_id']).agg(lambda x: x.tolist())
         combined = df['combined'].tolist()
