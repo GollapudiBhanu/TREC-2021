@@ -4,6 +4,7 @@ import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 import numpy as np
+import SaveScore
 
 
 nltk.download("wordnet")
@@ -100,4 +101,17 @@ class GetCombinedBoolQuery:
         or_query_results = self.prepareORBoolQuery(search_index)
 
         return and_query_results, or_query_results
+'''
+bool_query = GetCombinedBoolQuery("/home/junhua/trec/Trec2021/Data/2019_quries/topics2019.xml")
+combine_query_results = bool_query.prepareBoolQuery("2019-trec-precision-medicine-final")
+and_bool_results = combine_query_results[0]
+or_bool_results = combine_query_results[1]
 
+and_bool_results_score = and_bool_results[0]
+and_bool_results_id = and_bool_results[1]
+
+or_bool_results_score = or_bool_results[0]
+or_bool_results_id = or_bool_results[1]
+_ = SaveScore.Save("/home/junhua/trec/Trec2021/Output/Final_AND_BoolQuery_scores_2019.csv", and_bool_results_id, and_bool_results_score)
+_ = SaveScore.Save("/home/junhua/trec/Trec2021/Output/Final_OR_BoolQuery_scores_2019.csv", or_bool_results_id, or_bool_results_score)
+'''

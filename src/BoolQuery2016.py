@@ -1,91 +1,103 @@
 from elasticsearch import Elasticsearch
-import xml.etree.ElementTree as ET
 import os
-import pandas as pd
+import nltk
+from nltk.stem import WordNetLemmatizer
+from nltk.stem import PorterStemmer
+from nltk.corpus import stopwords
+import numpy as np
 
+nltk.download("wordnet")
+nltk.download('stopwords')
 
 class GetBoolQuery_2016:
-    def __init__(self, query_path):
-        self.query_path = query_path
+    def __init__(self, query_list, query_id_list):
+        self.query_list = query_list
+        self.query_id_list = query_id_list
         self.es = Elasticsearch()
         self.scores = list()
-        self.urls = list()
-        self.query_id = list()
-        self.prepareBoolQuery()
+        self.ids = list()
+        self.stopword_list = stopwords.words('english')
 
-    def prepareBoolQuery(self):
-        score_list = list()
-        tree = ET.parse(self.query_path)
-        root = tree.getroot()
-        for element in root:
+    def lowerCase(self, query):
+        if str(query) is None:
+            return ""
+        return " ".join(x.lower() for x in str(query).split())
+
+    def stemming(self, query):
+        st = PorterStemmer()
+        return st.stem(query)
+
+    def removePunctuation(self, text_value):
+        punc_symbols = "!\"#$%&()*+-,./:;<=>?@[\]^_`{|}~\n"
+        for symbol in punc_symbols:
+            text_value = np.char.replace(text_value, symbol, ' ')
+        return text_value.tolist()
+
+    def removeStopwords(self, text_value):
+        result = []
+        for text in text_value.split(" "):
+            if text not in self.stopword_list:
+                result.append(text)
+        if len(result) == 0:
+            return None
+        return " ".join(set(result))
+
+    def lemmatization(self, query, type = "AND"):
+        lower_query = self.lowerCase(query)
+        lower_query = self.removePunctuation(lower_query)
+        lower_query = self.removeStopwords(lower_query)
+        if lower_query is None:
+            return None
+        query_list = [lower_query]
+        wordnet_lemmatizer = WordNetLemmatizer()
+        splitword = ""
+        for index, word in enumerate(query_list):
+            for word_ in word.split():
+                stem_word = self.stemming(word_)
+                lem_word = wordnet_lemmatizer.lemmatize(stem_word)
+                if splitword is "":
+                    splitword += lem_word
+                else:
+                    splitword = splitword + "," + lem_word
+        if type == "AND":
+            return self.prepareAndQuery(splitword)
+        if type == "OR":
+            return self.prepareORQuery(splitword)
+
+    def prepareAndQuery(self, splitword):
+        out_query_string = ""
+        for split in splitword.split(","):
+            query_string = "(" + split + ")"
+            if out_query_string is "":
+                out_query_string = query_string
+            else:
+                out_query_string = out_query_string + "AND" + query_string
+        return out_query_string
+
+    def prepareORQuery(self, splitword):
+        out_query_string = ""
+        for split in splitword.split(","):
+            query_string = "(" + split + ")"
+            if out_query_string is "":
+                out_query_string = query_string
+            else:
+                out_query_string = out_query_string + "OR" + query_string
+        return out_query_string
+
+    def prepareBoolQuery(self, type):
+        for number, query in zip(self.query_id_list, self.query_list):
+            query = self.lemmatization(query, type)
+            if query == None:
+                continue
             query_body = {
                 'query': {
-                    'bool': {
-                        'must': [{
-                            'bool': {
-                                'should': [
-                                    {'match': {'journal-title': element[0].text}},
-                                    {'match': {'article-type': element[0].text}},
-                                    {'match':  {'article-title': element[0].text}},
-                                    {'match':  {'abstract': element[0].text}},
-                                    {'match': {'keywords': element[0].text}},
-                                    {'match': {'subheading': element[0].text}},
-                                    {'match': {'introduction': element[0].text}},
-                                    {'match': {'conclusion': element[0].text}}
-                                ]
-                            },
-                            'bool': {
-                                'should': [
-                                    {'match': {'journal': element[1].text}},
-                                    {'match': {'article-type': element[1].text}},
-                                    {'match': {'article-title': element[1].text}},
-                                    {'match': {'abstract': element[1].text}},
-                                    {'match': {'keywords': element[1].text}},
-                                    {'match': {'subheading': element[1].text}},
-                                    {'match': {'introduction': element[1].text}},
-                                    {'match': {'conclusion': element[1].text}}
-                                ]
-                            }
-                        }]
+                    'query_string': {
+                        'default_field': "concat_string",
+                        'query': query
                     }
                 }
             }
-            query_result = self.es.search(index= "2016-trec-precision-medicine", body = query_body, size=1000)
-            score_list.append(query_result)
-            self.query_id.append(element.attrib["number"])
-
-        #Need to work on this for 2016 data
-        for result in score_list:
-            url = list()
-            score = list()
-            for res in result['hits']['hits']:
-                url.append(self.__prepareDocId(res['_source']['url']))
-                score.append(res['_score'])
-            self.scores.append(score)
-            self.urls.append(url)
-        self.savescores()
-
-    '''
-        It returns the document name from the provided URL.
-    '''
-
-    def __prepareDocId(self, url):
-        head, tail = os.path.split(url)
-        return tail
-
-    def getQueryIdList(self, query_id, count):
-        query_id_list = list()
-        for _ in range(count):
-            query_id_list.append(query_id)
-        return query_id_list
-
-    '''
-        Prepare scores dpcument
-    '''
-    def savescores(self):
-        for query_id, doc_id_list, score_list in zip(self.query_id, self.urls, self.scores):
-            query_id_list = self.getQueryIdList(query_id, len(doc_id_list))
-            for query_id, doc_id, score in zip(query_id_list, doc_id_list, score_list):
-                if score > 0.0:
-                    with open("./Output/BoolQuery_scores.csv", "a") as outFile:
-                        outFile.write(str(query_id) + "\t" + doc_id + '\t' + str(score) + "\n")
+            query_result = self.es.search(index="2016-trec-precision-medicine-final", body=query_body, size=3000)
+            self.scores.append(query_result)
+            self.ids.append(number)
+        return self.scores, self.ids

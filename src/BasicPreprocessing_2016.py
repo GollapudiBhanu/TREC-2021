@@ -15,6 +15,7 @@ import nltk
 from nltk.stem import PorterStemmer
 from nltk.stem import WordNetLemmatizer
 import numpy as np
+import xmltodict
 
 nltk.download("wordnet")
 nltk.download('stopwords')
@@ -88,6 +89,8 @@ class Preprocessing_2016:
             return ""
         text_value = self.lowerCase(text_value)
         text_value = self.removePunctuation(text_value)
+        text_value = self.remove_apostrophe(text_value)
+        text_value = self.remove_single_characters(text_value)
         text_value = self.removeStopwords(text_value)
         return text_value
 
@@ -262,21 +265,36 @@ class Preprocessing_2016:
         return lemmatizationList
 
     '''
-          1. Get commonWords from corpus and add them to stopWordsList.
-          2. Preprocess the text_value.
-          3. Apply lemmatization for Tokenized words in the List.
-     '''
+        Perform Stemming 
+    '''
+
+    def perform_stemming(self, lem_list):
+        st = PorterStemmer()
+        for words in lem_list:
+            for index, word in enumerate(words):
+                words[index] = " ".join(
+                    [st.stem(word) for word in word.split()])
+        return lem_list
+
+    '''
+        1. Get commonWords from corpus and add them to stopWordsList.
+        2. Preprocess the text_value.
+        3. Apply lemmatization for Tokenized words in the List.
+    '''
 
     def valuePreprocessing(self, text_value):
         if text_value == None:
             return ""
         self.documentData.clear()
         pre_proceed_text_value = self.preProcessingText(text_value)
+        print(pre_proceed_text_value)
         self.documentData.append(pre_proceed_text_value)
         tokens_list = self.valueTokenization()
-        lem_out_put = self.lemmatization(tokens_list)
+        stem_out_put = self.perform_stemming(tokens_list)
+        lem_out_put = self.lemmatization(stem_out_put)
         for output in lem_out_put:
             return ' '.join(map(str, output))
+
 
     '''
           1. List out all sub-directories
@@ -343,17 +361,17 @@ class Preprocessing_2016:
                 for subkey, subvalue in value.items():
                     if isinstance(subvalue, dict):
                         for childkey, childvalue in subvalue.items():
-                            if childkey == "abstract" or "subheading" or "introduction" or "conclusion" or "article-title":
+                            if childkey == "abstract" or "subheading" or "introduction" or "conclusion" or "article-title" or "brief_title" or "article-title" or "abstract" or "introduction" or "conclusion" or "official_title":
                                 data[childkey] = self.valuePreprocessing(childvalue)
                             else:
                                 data[childkey] = childvalue
                     else:
-                        if subkey == "abstract" or "subheading" or "introduction" or "conclusion" or "article-title":
+                        if subkey == "abstract" or "subheading" or "introduction" or "conclusion" or "article-title" or "textblock" or "article-title" or "abstract" or "introduction" or "conclusion" or "brief_title" or "official_title" or "description":
                             data[subkey] = self.valuePreprocessing(subvalue)
                         else:
                             data[subkey] = subvalue
             else:
-                if key == "abstract" or "subheading" or "introduction" or "conclusion" or "article-title":
+                if key == "abstract" or "subheading" or "introduction" or "conclusion" or "article-title" or "textblock" or "article-title" or "abstract" or "introduction" or "conclusion" or "brief_title" or "official_title" or "description":
                     data[key] = self.valuePreprocessing(value)
                 else:
                     data[key] = value

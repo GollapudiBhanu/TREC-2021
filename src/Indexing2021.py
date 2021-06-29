@@ -9,14 +9,8 @@ for example:
 '''
 
 import json
-from datetime import datetime
 from elasticsearch import Elasticsearch
-import xml.etree.ElementTree as ET
 import os
-import re
-import sys
-from pathlib import Path
-import collections
 
 '''
 If arguments count is lessthan 2, it throwes error.
@@ -187,5 +181,8 @@ class Indexing_2021:
         print(index_value)
         print(res['result'])
         print("####################################")
+
+#index_obj = Indexing_2021('/home/junhua/trec/Trec2021/Data/TREC_2021_Basicpreprocessing_output',"2021-trec-precision-medicine-final")
+
 
 

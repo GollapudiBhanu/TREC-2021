@@ -23,10 +23,12 @@ class ExapndedQuery:
         for topic in topic_list:
             if "gene" in topic:
                 topic_id = topic.split("gene")
-                topic_id_list.append(topic_id[0])
+                topic_id = str(topic_id[0]).split('T')
+                topic_id_list.append(int(topic_id[1]) + 1)
             elif "disease" in topic:
                 topic_id = topic.split("disease")
-                topic_id_list.append(topic_id[0])
+                topic_id = str(topic_id[0]).split('T')
+                topic_id_list.append(int(topic_id[1]) + 1)
         return topic_id_list
 
     def removeDuplicates(self):
@@ -37,14 +39,16 @@ class ExapndedQuery:
     def addColoumnToDataFrame(self):
         expansion_dataFrame = self.readfile()
         topic_id_list = self.groupByTopicId()
+        print(topic_id_list)
         expansion_dataFrame["group_topic_id"] = topic_id_list
+        print(expansion_dataFrame)
         return expansion_dataFrame
 
     def getGroupedData(self):
         df = self.addColoumnToDataFrame()
         df['query_concept'] = df["query_concept"].astype(str)
-        df['extended_concept'] = df['extended_concept'].astype(str)
-        df['combined'] = df[['query_concept', 'extended_concept']].agg('-'.join, axis=1)
+        df['new_extended'] = df['new_extended'].astype(str)
+        df['combined'] = df[['query_concept', 'new_extended']].agg('#'.join, axis=1)
         df['Topics'] = df['group_topic_id']
         df = df.groupby(['group_topic_id']).agg(lambda x: x.tolist())
         combined = df['combined'].tolist()
@@ -55,5 +59,5 @@ class ExapndedQuery:
     def getTopicIdList(self, topic_id_lsit):
         topics = list()
         for topic_list in topic_id_lsit:
-            topics.append(topic_list[0])
+            topics.append(str(topic_list[0]))
         return topics

@@ -397,6 +397,3 @@ class Preprocessing_2021:
                     else:
                         fileData.append(str(value))
         self.corpus.append(self.listToString(fileData))
-
-basic_preprocessing = Preprocessing_2021('/home/junhua/trec/Trec2021/Data/TREC_2021_Basicpreprocessing_Input', '/home/junhua/trec/Trec2021/Data/TREC_2021_Basicpreprocessing_output_1')
-basic_preprocessing.getRootJsonObject()

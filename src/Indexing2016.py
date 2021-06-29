@@ -59,9 +59,33 @@ class Indexing_2016:
             'keywords': data['keywords'],
             'subheading': data['subheading'],
             'introduction': data['introduction'],
-            'conclusion': data['conclusion'],
+            'conclusion': data['conclusion']
         }
+        doc['concat_string'] = self.prepareConcatString(doc)
         return doc
+
+    def prepareConcatString(self, doc):
+        aTitle = doc['article-title']
+        abstract = doc['abstract']
+        keyword = doc['keywords']
+        subheading = doc['subheading']
+        introduction = doc['introduction']
+        conclusion = doc['conclusion']
+
+        if aTitle is None:
+            aTitle = ""
+        if abstract is None:
+            abstract = ""
+        if keyword is None:
+            keyword = ""
+        if subheading is None:
+            subheading = ""
+        if introduction is None:
+            introduction = ""
+        if conclusion is None:
+            conclusion = ""
+
+        return aTitle + " " + abstract + " " + keyword + " " + subheading+ " " + introduction + " " + conclusion
 
     '''
         1. list out all sub-directories and get folder by folder and get all xml files.
@@ -88,7 +112,7 @@ class Indexing_2016:
 
     def indexing(self, data, index_value):
         doc = self.prepareDict(data)
-        res = Elasticsearch().index(index="2016-trec-precision-medicine", id=int(index_value), body=doc)
+        res = Elasticsearch().index(index="2016-trec-precision-medicine-final", id=int(index_value), body=doc)
         print(index_value)
         print(res['result'])
         print("####################################")
