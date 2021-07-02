@@ -10,29 +10,48 @@ nltk.download("wordnet")
 nltk.download('stopwords')
 
 class GetBoolQuery_2016:
-    def __init__(self, query_list, query_id_list):
+    def __init__(self, query_list, query_id_list, search_index = "2016-trec-precision-medicine-final"):
         self.query_list = query_list
         self.query_id_list = query_id_list
         self.es = Elasticsearch()
-        self.scores = list()
-        self.ids = list()
+        self.search_index = search_index
         self.stopword_list = stopwords.words('english')
 
+    ''' 
+        Input_attributes: query: String
+        Description: converts string to lowercase.
+        Return: String
+    '''
     def lowerCase(self, query):
         if str(query) is None:
             return ""
         return " ".join(x.lower() for x in str(query).split())
 
+    ''' 
+        Input_attributes: query: String
+        Description: Using Portstemmer, performs stemming.
+        Return: String
+    '''
     def stemming(self, query):
         st = PorterStemmer()
         return st.stem(query)
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: removes the punctuation from string.
+        Return: list: []
+    '''
     def removePunctuation(self, text_value):
         punc_symbols = "!\"#$%&()*+-,./:;<=>?@[\]^_`{|}~\n"
         for symbol in punc_symbols:
             text_value = np.char.replace(text_value, symbol, ' ')
         return text_value.tolist()
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: removes stopwords from string.
+        Return: text_value: String
+    '''
     def removeStopwords(self, text_value):
         result = []
         for text in text_value.split(" "):
@@ -42,6 +61,11 @@ class GetBoolQuery_2016:
             return None
         return " ".join(set(result))
 
+    '''
+        Input_attributes: query: String
+        Description: using WordNetLemmatizer 
+        Return: text_value: String
+    '''
     def lemmatization(self, query, type = "AND"):
         lower_query = self.lowerCase(query)
         lower_query = self.removePunctuation(lower_query)
@@ -64,6 +88,11 @@ class GetBoolQuery_2016:
         if type == "OR":
             return self.prepareORQuery(splitword)
 
+    '''
+        Input_attributes: query: String
+        Description: Combine all strings using "AND" operator 
+        Return: out_query_string: String
+    '''
     def prepareAndQuery(self, splitword):
         out_query_string = ""
         for split in splitword.split(","):
@@ -73,6 +102,12 @@ class GetBoolQuery_2016:
             else:
                 out_query_string = out_query_string + "AND" + query_string
         return out_query_string
+
+    '''
+        Input_attributes: query: String
+        Description: Combine all strings using "OR" operator 
+        Return: out_query_string: String
+    '''
 
     def prepareORQuery(self, splitword):
         out_query_string = ""
@@ -84,7 +119,18 @@ class GetBoolQuery_2016:
                 out_query_string = out_query_string + "OR" + query_string
         return out_query_string
 
+    '''
+        Input_attributes: search_index: Index to search for query
+        Description: 
+            1. From query_path using ET, it retrieve element by and element.
+            2. Using search_index, from Elastic search it retrieve the results.
+        Return: 
+            1.scores: []
+            2.id_list: []
+    '''
     def prepareBoolQuery(self, type):
+        scores = list()
+        id_list = list()
         for number, query in zip(self.query_id_list, self.query_list):
             query = self.lemmatization(query, type)
             if query == None:
@@ -97,7 +143,7 @@ class GetBoolQuery_2016:
                     }
                 }
             }
-            query_result = self.es.search(index="2016-trec-precision-medicine-final", body=query_body, size=3000)
-            self.scores.append(query_result)
-            self.ids.append(number)
-        return self.scores, self.ids
+            query_result = self.es.search(index=self.search_index, body=query_body, size=3000)
+            scores.append(query_result)
+            id_list.append(number)
+        return scores, id_list

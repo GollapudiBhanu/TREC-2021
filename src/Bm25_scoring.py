@@ -64,9 +64,7 @@ class BM25:
         return tfidf_list
 
     def Items(self):
-        # Return a list [(term_idx, term_desc),]
         items = self.dictionary.items()
-        # items.sort()
         return items
 
     def getBM25Score(self, query_list, document_id_list):
@@ -82,7 +80,6 @@ class BM25:
             data_frame = data_frame[data_frame['score'] > 0.0]
             data_frame_collection.append(data_frame)
         final = pd.concat(data_frame_collection)
-        print("Final score")
         final.to_csv('./Output/Final_score.csv', index=False)
 
     def getExpandedBM25Score(self, query_list, document_id_list, expanded_query_id_list=[]):

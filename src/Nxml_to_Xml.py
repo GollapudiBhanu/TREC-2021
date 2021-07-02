@@ -5,8 +5,8 @@ import os
 class NxmlConversion:
 
     def __init__(self, source_dir, dest_dir):
-        self.dest_dir = dest_dir  # /home/iialab/Bhanu/PythonFiles/Sample_Trec_2016
-        self.source_dir = source_dir  # /home/iialab/Bhanu/PythonFiles/sample_Trec_2016_output
+        self.dest_dir = dest_dir
+        self.source_dir = source_dir
 
     def convert_nxml_to_xml(self):
         src_dir = os.listdir(self.source_dir)

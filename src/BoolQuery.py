@@ -5,34 +5,46 @@ from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 import numpy as np
 
-
 nltk.download("wordnet")
 
 class GetBoolQuery:
     def __init__(self, query_path):
         self.query_path = query_path
         self.es = Elasticsearch()
-        self.query_id_list = list()
-        self.score_list = list()
 
+    ''' 
+        Input_attributes: query: String
+        Description: converts string to lowercase.
+        Return: String
+    '''
     def lowerCase(self, query):
         return " ".join(x.lower() for x in query.split())
 
+    ''' 
+        Input_attributes: query: String
+        Description: Using Portstemmer, performs stemming.
+        Return: String
+    '''
     def stemming(self, query):
         st = PorterStemmer()
         return st.stem(query)
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: removes the punctuation from string.
+        Return: list: []
+    '''
     def removePunctuation(self, text_value):
         punc_symbols = "!\"#$%&()*+-.,/:;<=>?@[\]^_`{|}~\n"
         for symbol in punc_symbols:
             text_value = np.char.replace(text_value, symbol, '')
         return text_value.tolist()
 
-
     '''
-        Performs lemmatization by using WordNetLemmatizer.
+        Input_attributes: query: String
+        Description: using WordNetLemmatizer 
+        Return: text_value: String
     '''
-
     def lemmatization(self, query):
         lower_query = self.lowerCase(query)
         lower_query = self.removePunctuation(lower_query)
@@ -51,9 +63,20 @@ class GetBoolQuery:
                         splitword =  splitword + "," + lem_word
         return splitword
 
-    def prepareBoolQuery(self, search_index):
+    '''
+        Input_attributes: search_index: Index to search for query
+        Description: 
+            1. From query_path using ET, it retrieve element by and element.
+            2. Using search_index, from Elastic search it retrieve the results.
+        Return: 
+            1.self.score_list: []
+            2.self.query_id_list: []
+    '''
+    def prepareBoolQuery(self, search_index, query_type = " AND "):
         tree = ET.parse(self.query_path)
         root = tree.getroot()
+        query_id_list = list()
+        score_list = list()
         for element in root:
             disease = element[0].text
             gene = element[1].text
@@ -63,11 +86,11 @@ class GetBoolQuery:
                 'query': {
                     'query_string': {
                         'default_field': "concat_string",
-                        'query': (disease_value) + " AND " + (gene_value)
+                        'query': (disease_value) + query_type + (gene_value)
                     }
                 }
             }
             query_result = self.es.search(index=search_index, body=query_body, size = 3000)
-            self.score_list.append(query_result)
-            self.query_id_list.append(element.attrib["number"])
-        return self.score_list, self.query_id_list
+            score_list.append(query_result)
+            query_id_list.append(element.attrib["number"])
+        return score_list, query_id_list

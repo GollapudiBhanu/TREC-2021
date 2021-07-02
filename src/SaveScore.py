@@ -10,6 +10,9 @@ class Save:
         self.query_id_list = query_id_list
         self.extractScores()
 
+    '''
+        Extract the scores and URLs from the provided self.score_list
+    '''
     def extractScores(self):
         for result in self.score_list:
             url = list()
@@ -29,6 +32,9 @@ class Save:
         head, tail = url.split("httpsclinicaltrialsgovshow")
         return tail
 
+    '''
+        Prepares the Query_id_list with provided id and count.
+    '''
     def getQueryIdList(self, query_id, count):
         query_id_list = list()
         for _ in range(count):

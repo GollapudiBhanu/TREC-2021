@@ -10,6 +10,9 @@ class Conversion:
         self.source_dir = source_dir  # /home/iialab/Bhanu/PythonFiles/sample_Trec_2016_output
         self.convert_nxml_to_xml()
 
+    '''
+        
+    '''
     def convert_nxml_to_xml(self):
         src_dir = os.listdir(self.source_dir)
         for dir in src_dir:
@@ -18,7 +21,6 @@ class Conversion:
                 xml_files = os.listdir(self.source_dir + '/' + dir + '/' + sdir)
                 if not os.path.exists(self.dest_dir + '/' + dir + '/' + sdir):
                     os.makedirs(self.dest_dir + '/' + dir + '/' + sdir)
-                    print("Data Done")
                 for xml in xml_files:
                     self.convertXML(self.source_dir + '/' + dir + '/' + sdir + '/' + xml,
                                     self.dest_dir + '/' + dir + '/' + sdir + '/' + xml)
@@ -29,7 +31,6 @@ class Conversion:
         bs_data = BeautifulSoup(data, "xml")
         bData = bs_data.prettify()
         with open(output_file, 'w') as out_file:
-            print(bData)
             out_file.write(bData)
 
     # Need top move basic preprocessing

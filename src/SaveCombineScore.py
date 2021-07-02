@@ -16,6 +16,9 @@ class Savecombine:
         self.or_query_id_list = or_id_list
         self.combineScores()
 
+    '''
+        Extract AND scores, AND urls from the and_score_list
+    '''
     def extractAndScores(self):
         for result in self.and_score_list:
             url = list()
@@ -26,6 +29,9 @@ class Savecombine:
             self.and_scores.append(score)
             self.and_urls.append(url)
 
+    '''
+        Extract OR scores, OR urls from the or_score_list
+    '''
     def extractORScores(self):
         for result in self.or_score_list:
             url = list()
@@ -36,7 +42,9 @@ class Savecombine:
             self.or_scores.append(score)
             self.or_urls.append(url)
 
-
+    '''
+        1. Check the and_doc_id in combine_doc_id_results, and remove the duplicates from the combine_doc_id_results and append the all three combine lists to and list.
+    '''
     def combineScores(self):
         self.extractAndScores()
         self.extractORScores()
@@ -54,16 +62,18 @@ class Savecombine:
             andurl.extend(orurl)
             self.score_res.append(andscore)
             self.url_res.append(andurl)
-            print("### Output #########")
-            print(len(self.and_query_id_list))
-            print(len(self.score_res))
-            print(len(self.url_res))
         self.savescores()
 
+    '''
+        Extract the docid from provided URL.
+    '''
     def __prepareDocId(self, url):
         head, tail = url.split("httpsclinicaltrialsgovshow")
         return tail
 
+    '''
+        prepares the Query_id_list with provided id and count.
+    '''
     def getQueryIdList(self, query_id, count):
         query_id_list = list()
         for _ in range(count):
@@ -79,10 +89,6 @@ class Savecombine:
         random_numbers = ran_obj.genereate1000FloatNumbers()
         for query_id, doc_id_list, score_list in zip(self.and_query_id_list, self.url_res, self.score_res):
             query_id_list = self.getQueryIdList(query_id, len(doc_id_list))
-            print(len(query_id_list))
-            print(len(doc_id_list))
-            print(len(score_list))
-            print(len(random_numbers))
             for query_id, doc_id, score, random_number in zip(query_id_list, doc_id_list, score_list, random_numbers):
                 if score > 0.0:
                     with open(self.out_file_path, "a") as outFile:

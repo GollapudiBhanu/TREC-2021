@@ -9,24 +9,15 @@ for example:
 '''
 
 import json
-from datetime import datetime
 from elasticsearch import Elasticsearch
-import xml.etree.ElementTree as ET
 import os
-import re
-import sys
-from pathlib import Path
-import collections
-
-'''
-If arguments count is lessthan 2, it throwes error.
-'''
 
 
 class Indexing_2016:
 
-    def __init__(self, source_dir):
+    def __init__(self, source_dir, search_index):
         self.es = Elasticsearch()
+        self.search_index = search_index
         self.source_dir = source_dir#'/home/junhua/trec/FinalCode/TREC_2019_Basic_preprocessing'
         self.loadJsonDict()
 
@@ -112,7 +103,7 @@ class Indexing_2016:
 
     def indexing(self, data, index_value):
         doc = self.prepareDict(data)
-        res = Elasticsearch().index(index="2016-trec-precision-medicine-final", id=int(index_value), body=doc)
+        res = Elasticsearch().index(index=self.search_index, id=int(index_value), body=doc)
         print(index_value)
         print(res['result'])
         print("####################################")

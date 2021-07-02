@@ -1,6 +1,4 @@
 from elasticsearch import Elasticsearch
-import xml.etree.ElementTree as ET
-import nltk
 from nltk.stem import WordNetLemmatizer
 from nltk.stem import PorterStemmer
 import numpy as np
@@ -12,9 +10,31 @@ class GetBoolQueryExpansion:
         self.search_index = search_index
         self.score_list = list()
 
+    ''' 
+        Input_attributes: query: String
+        Description: converts string to lowercase.
+        Return: String
+    '''
     def lowerCase(self, query):
         return " ".join(x.lower() for x in query.split())
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: removes the punctuation from string.
+        Return: list: []
+    '''
+    def removePunctuation(self, text_value):
+        punc_symbols = "!\"#$%&()*+-./:;<=>?@[\]^_`{|}~\n"
+        for symbol in punc_symbols:
+            text_value = np.char.replace(text_value, symbol, '')
+        return text_value.tolist()
+
+
+    '''
+        Input_attributes: query: String
+        Description: using WordNetLemmatizer and PorterStemmer, first perform the stemming and after it peforms Lemmatization.
+        Return: text_value: String
+    '''
     def stemmingwithlemmatization(self, query):
         wordnet_lemmatizer = WordNetLemmatizer()
         st = PorterStemmer()
@@ -29,18 +49,13 @@ class GetBoolQueryExpansion:
                 combinedString = combinedString + " " + lem
         return combinedString
 
-
-    def removePunctuation(self, text_value):
-        punc_symbols = "!\"#$%&()*+-./:;<=>?@[\]^_`{|}~\n"
-        for symbol in punc_symbols:
-            text_value = np.char.replace(text_value, symbol, '')
-        return text_value.tolist()
-
-    '''
-        Performs lemmatization by using WordNetLemmatizer.
+    ''' 
+        Input_attributes: text_value: String
+        Description: Perform Basic preprocessing on Query part.
+        Return: list: []
     '''
 
-    def lemmatization(self, query_list):
+    def processQuery(self, query_list):
         output_str_list = list()
         for index, query in enumerate(query_list):
             expanded_query = query.split(',')
@@ -51,26 +66,34 @@ class GetBoolQueryExpansion:
                 output_str_list.append(output)
         return ','.join(output_str_list)
 
-
-    def getScores(self):
+    '''
+        Input_attributes: search_index: Index to search for query
+        Description: 
+            1. From query_path using ET, it retrieve element by and element.
+            2. Using search_index, from Elastic search it retrieve the results.
+        Return: 
+            score_list: []
+    '''
+    def getScores(self, query_type = " AND "):
         disease = ""
         gene = ""
+        score_list = []
         for query in self.combined_query_list:
             if query[0] is not None:
                 disease = query[0].split('#')
             if query[1] is not None:
                 gene = query[1].split('#')
-            disease = self.lemmatization(disease)
-            gene = self.lemmatization(gene)
+            disease = self.processQuery(disease)
+            gene = self.processQuery(gene)
             query_body = {
                 'query': {
                     'query_string': {
                         'default_field': "concat_string",
-                        'query': "(" + disease + ")" + " AND " + "(" + gene + ")"
+                        'query': "(" + disease + ")" + query_type + "(" + gene + ")"
                     }
                 }
             }
             query_result = self.es.search(index=self.search_index, body=query_body, size=1000)
-            self.score_list.append(query_result)
-        return self.score_list
+            score_list.append(query_result)
+        return score_list
 

@@ -7,12 +7,13 @@ from elasticsearch import Elasticsearch
 
 class creatCorpus:
 
-    def __init__(self):
+    def __init__(self, search_index):
         self.sourceDir = ""
         self.query_doc = ""
         self.es = Elasticsearch()
         self.doc_id = list()
         self.query_id = list()
+        self.search_index = search_index
         self.outputFile = '/home/iialab/Bhanu/PythonFiles/FinalCode/2019_Bm25_Top1000.txt'
 
     '''
@@ -45,7 +46,7 @@ class creatCorpus:
     def __getdocumnetby(self, index):
         resultantString = ""
         try:
-            res = self.es.get(index="2019-trec-precision-medicine", id=index)
+            res = self.es.get(index=self.search_index, id=index)
             for key, value in res['_source'].items():
                 if key == "url":
                     self.__prepareDocId(value)

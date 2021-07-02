@@ -69,14 +69,6 @@ class Preprocessing_2016:
         self.stopWords_list.append(all_stopwords)
         self.getRootJsonObjectForCorpus()
 
-    def getDirectoryPath(self):
-        if len(sys.argv) < 3:
-            print('[ERROR] Incomplete number of arguements')
-        elif len(sys.argv) >= 3:
-            self.source_dir = sys.argv[1]
-            self.dest_dir = sys.argv[2]
-        self.getRootJsonObjectForCorpus()
-
     '''
           1. It converts provided text to lowercase.
           2. It removes the punctuation.
@@ -287,7 +279,6 @@ class Preprocessing_2016:
             return ""
         self.documentData.clear()
         pre_proceed_text_value = self.preProcessingText(text_value)
-        print(pre_proceed_text_value)
         self.documentData.append(pre_proceed_text_value)
         tokens_list = self.valueTokenization()
         stem_out_put = self.perform_stemming(tokens_list)

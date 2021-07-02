@@ -1,7 +1,4 @@
 import RandomFloat
-import math
-
-
 
 class SaveCombineQueryExapnsion:
 
@@ -13,7 +10,10 @@ class SaveCombineQueryExapnsion:
         self.doc_res = list()
         self.out_file_path = out_file_path
         self.query_id_res = list()
-
+    '''
+        1. Check the and_doc_id in combine_doc_id_results, and remove the duplicates from the combine_doc_id_results and append the all three combine lists to and list.
+        2. The resultant step1 lists, we need to check the resultant and_doc_id with or_doc_id and remove the duplicates and append the all 3-or lists to 3-resultant and list.
+    '''
     def extractandSaveQueryExapansionScore(self):
         and_query_id_results = self.and_results_tuple[0]
         and_doc_id_results = self.and_results_tuple[1]
@@ -33,7 +33,6 @@ class SaveCombineQueryExapnsion:
 
         for and_query_id_list, and_doc_id_list, and_score_list, com_query_id_list, com_doc_id_list, com_score_list in zip(and_query_id_results, and_doc_id_results, and_score_results,
                                                                                                                           combine_query_id_results, combine_doc_id_results, combine_score_results):
-            print(and_query_id_list[0])
             query_id_results = and_query_id_list
             doc_id_results = and_doc_id_list
             score_results = and_score_list
@@ -43,7 +42,6 @@ class SaveCombineQueryExapnsion:
             copy_score_list = com_score_list.copy()
 
             for and_doc_id in and_doc_id_list:
-                print(and_doc_id)
                 try:
                     index = copy_doc_id.index(and_doc_id)
                     del copy_doc_id[index]
@@ -84,6 +82,9 @@ class SaveCombineQueryExapnsion:
             self.doc_res.append(doc_id_results)
         self.savescores()
 
+    '''
+        1. Check the and_doc_id in combine_doc_id_results, and remove the duplicates from the combine_doc_id_results and append the all three combine lists to and list.
+    '''
     def extractandSaveBaseLineQueryScore(self):
         and_query_id_results = self.and_results_tuple[0]
         and_doc_id_results = self.and_results_tuple[1]
@@ -120,7 +121,7 @@ class SaveCombineQueryExapnsion:
         self.savescores()
 
     '''
-        Prepare scores document
+        Prepare scores document with appending of random float numbers.
     '''
 
     def savescores(self):

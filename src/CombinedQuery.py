@@ -13,27 +13,39 @@ class GetCombinedBoolQuery:
     def __init__(self, query_path):
         self.query_path = query_path
         self.es = Elasticsearch()
-        self.and_query_id_list = list()
-        self.or_query_id_list = list()
-        self.and_score_list = list()
-        self.or_score_list = list()
 
+    ''' 
+        Input_attributes: query: String
+        Description: converts string to lowercase.
+        Return: String
+    '''
     def lowerCase(self, query):
         return " ".join(x.lower() for x in query.split())
 
+    ''' 
+        Input_attributes: query: String
+        Description: Using PorterStemmer, performs stemming operation on Query string.
+        Return: String
+    '''
     def stemming(self, query):
         st = PorterStemmer()
         return st.stem(query)
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: removes the punctuation from string.
+        Return: list: []
+    '''
     def removePunctuation(self, text_value):
         punc_symbols = "!\"#$%&()*+-.,/:;<=>?@[\]^_`{|}~\n"
         for symbol in punc_symbols:
             text_value = np.char.replace(text_value, symbol, '')
         return text_value.tolist()
 
-
     '''
-        Performs lemmatization by using WordNetLemmatizer.
+        Input_attributes: query: String
+        Description: Using WordNetLemmatizer, Performs lemmatization by using WordNetLemmatizer.
+        Return: String
     '''
 
     def lemmatization(self, query):
@@ -54,9 +66,22 @@ class GetCombinedBoolQuery:
                         splitword =  splitword + "," + lem_word
         return splitword
 
-    def prepareANDBoolQuery(self, search_index):
+    '''
+        Input_attributes: 
+            1.search_index: Index to search for query
+            2.type: type of operation while combing Queries.
+        Description: 
+            1. From query_path using ET, it retrieve element by and element.
+            2. Using search_index, from Elastic search it retrieve the results.
+        Return: 
+            1.score_list: []
+            2.id_list: []
+    '''
+    def prepareQuery(self, search_index, type):
         tree = ET.parse(self.query_path)
         root = tree.getroot()
+        score_list = []
+        id_list = []
         for element in root:
             disease = element[0].text
             gene = element[1].text
@@ -66,52 +91,17 @@ class GetCombinedBoolQuery:
                 'query': {
                     'query_string': {
                         'default_field': "concat_string",
-                        'query': (disease_value) + " AND " + (gene_value)
+                        'query': (disease_value) + type + (gene_value)
                     }
                 }
             }
             query_result = self.es.search(index=search_index, body=query_body, size = 3000)
-            self.and_score_list.append(query_result)
-            self.and_query_id_list.append(element.attrib["number"])
-        return self.and_score_list, self.and_query_id_list
-
-    def prepareORBoolQuery(self, search_index):
-        tree = ET.parse(self.query_path)
-        root = tree.getroot()
-        for element in root:
-            disease = element[0].text
-            gene = element[1].text
-            disease_value = self.lemmatization(disease)
-            gene_value = self.lemmatization(gene)
-            query_body = {
-                'query': {
-                    'query_string': {
-                        'default_field': "concat_string",
-                        'query': (disease_value) + " OR " + (gene_value)
-                    }
-                }
-            }
-            query_result = self.es.search(index=search_index, body=query_body, size = 3000)
-            self.or_score_list.append(query_result)
-            self.or_query_id_list.append(element.attrib["number"])
-        return self.or_score_list, self.or_query_id_list
+            score_list.append(query_result)
+            id_list.append(element.attrib["number"])
+        return score_list, id_list
 
     def prepareBoolQuery(self, search_index):
-        and_query_results = self.prepareANDBoolQuery(search_index)
-        or_query_results = self.prepareORBoolQuery(search_index)
+        and_query_results = self.prepareQuery(search_index, " AND ")
+        or_query_results = self.prepareQuery(search_index, " OR ")
 
         return and_query_results, or_query_results
-'''
-bool_query = GetCombinedBoolQuery("/home/junhua/trec/Trec2021/Data/2019_quries/topics2019.xml")
-combine_query_results = bool_query.prepareBoolQuery("2019-trec-precision-medicine-final")
-and_bool_results = combine_query_results[0]
-or_bool_results = combine_query_results[1]
-
-and_bool_results_score = and_bool_results[0]
-and_bool_results_id = and_bool_results[1]
-
-or_bool_results_score = or_bool_results[0]
-or_bool_results_id = or_bool_results[1]
-_ = SaveScore.Save("/home/junhua/trec/Trec2021/Output/Final_AND_BoolQuery_scores_2019.csv", and_bool_results_id, and_bool_results_score)
-_ = SaveScore.Save("/home/junhua/trec/Trec2021/Output/Final_OR_BoolQuery_scores_2019.csv", or_bool_results_id, or_bool_results_score)
-'''

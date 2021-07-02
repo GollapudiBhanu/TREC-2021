@@ -1,14 +1,6 @@
-"""
-To Run the Script:
-$ python3 [source directory of collection] [destination directory]
-     Example:
-     $ python3 /home/iialab/Downloads/Preprocessing.py /home/iialab/Downloads/clinical_trials.0 /home/iialab/Downloads/clinical_trials_new
-"""
-
 import xml.etree.ElementTree as ET
 import json
 import os
-import sys
 from nltk.corpus import stopwords
 from textblob import Word
 import nltk
@@ -18,6 +10,7 @@ import numpy as np
 
 nltk.download("wordnet")
 nltk.download('stopwords')
+
 class Preprocessing:
 
     def __init__(self, source_dir, dest_dir):
@@ -64,19 +57,17 @@ class Preprocessing:
         self.stopWords_list.append(all_stopwords)
         self.getRootJsonObjectForCorpus()
 
-    def getDirectoryPath(self):
-        if len(sys.argv) < 3:
-            print('[ERROR] Incomplete number of arguements')
-        elif len(sys.argv) >= 3:
-            self.source_dir = sys.argv[1]
-            self.dest_dir = sys.argv[2]
-        self.getRootJsonObjectForCorpus()
-
     '''
-        1. It converts provided text to lowercase.
-        2. It removes the punctuation.
-        3. It removes the stopWords from the text.
-
+        Input_attributes: text_value: String
+        Description:
+            It takes Input as string value and perofrm below 6 operations
+                1. It converts provided text to lowercase.
+                2. It removes the punctuation.
+                3. It removes the stopWords from the text.
+                4. It removes apostrophe
+                5. It removes single characters
+                6. It removes stopwords.
+        Return: text_value: String
     '''
 
     def preProcessingText(self, text_value):
@@ -89,35 +80,69 @@ class Preprocessing:
         text_value = self.removeStopwords(text_value)
         return text_value
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: converts string to lowercase.
+        Return: text_value: String
+    '''
+
     def lowerCase(self, text_value):
+        if text_value is None:
+            return ""
         return " ".join(x.lower() for x in text_value.split())
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: removes the punctuation from string.
+        Return: text_value: String
+    '''
     def removePunctuation(self, text_value):
+        if text_value is None:
+            return ""
         punc_symbols = "!\"#$%&()*+-.,/:;<=>?@[\]^_`{|}~\n"
         for symbol in punc_symbols:
             text_value = np.char.replace(text_value, symbol, '')
         return text_value.tolist()
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: remove apostrophes from string.
+        Return: text_value: String
+    '''
     def remove_apostrophe(self, text_value):
+        if text_value is None:
+            return ""
         return text_value.replace("'", "")
 
-    '''
-        It removes the single character from the text
+    ''' 
+        Input_attributes: text_value: String
+        Description: remove single characters from string.
+        Return: text_value: String
     '''
 
     def remove_single_characters(self, text_value):
+        if text_value is None:
+            return ""
         new_text = ""
         for w in text_value.split():
             if len(w) > 1:
                 new_text = new_text + " " + w
         return new_text
 
+    ''' 
+        Input_attributes: text_value: String
+        Description: removes stopwords from string.
+        Return: text_value: String
+    '''
     def removeStopwords(self, text_value):
+        if text_value is None:
+            return ""
         return " ".join(x for x in text_value.split() if x not in self.stopWords_list)
 
+    ''' 
+        Description: Converts the list of corpus data in to words.
+        Return: singleWordList: List
     '''
-          It returns list of words from the documentData.
-     '''
 
     def tokenization(self):
         singleWordList = [
@@ -126,6 +151,10 @@ class Preprocessing:
         ]
         return singleWordList
 
+    ''' 
+            Description: Converts the list value(json values)data in to words.
+            Return: singleWordList: List
+    '''
     def valueTokenization(self):
         singleWordList = [
             [word for word in document.split() if word not in self.stopWords_list]
@@ -134,7 +163,8 @@ class Preprocessing:
         return singleWordList
 
     '''
-          It returns list of list words, whose count of frequency of words is grater than 1.
+        Description: returns list of list words, whose count of frequency of words is grater than 1.
+        Return: texts: [[]]
     '''
 
     def getCorpusList(self):
@@ -149,7 +179,8 @@ class Preprocessing:
         return texts
 
     '''
-          It returns the Most commonly used words from the corpus.
+        Description: returns the Most commonly used words from the corpus.
+        Return: ret_list: [[]]
     '''
 
     def getCommonWords(self):
@@ -161,7 +192,8 @@ class Preprocessing:
         return ret_list
 
     '''
-          It returns the Most commonly used words from the corpus, with their frquency.
+        Description: using NLTK get the frequency of common words.
+        Return: freq: []
     '''
 
     def getCommonfrequencyWords(self):
@@ -174,8 +206,10 @@ class Preprocessing:
         return freq
 
     '''
-          1. Get commonWords from corpus.
-          2. Sort the values based on the frequency and return the sorted list.
+        Description: 
+            1. Get common frquency words from corpus.
+            2. Sort the values based on the frequency and return the sorted list.
+        Return: ret_list: []
     '''
 
     def getTopFrequencyItems(self, number):
@@ -187,7 +221,10 @@ class Preprocessing:
         return ret_list[0:number]
 
     '''
-          Get the commonWords and add them to stop_word list.
+        Description: 
+            1. Get common frquency words from corpus.
+            2. Add the common frequency words to stopWords_list.
+        Return: common_stop_word_list: []
     '''
 
     def addCommonWordsToStopList(self):
@@ -196,8 +233,8 @@ class Preprocessing:
         return common_stop_word_list
 
     '''
-          It converts List to string and returns string value
-
+        Description: It converts List to string 
+        Return: convertList: String
     '''
 
     def listToString(self, data_list):
@@ -205,7 +242,8 @@ class Preprocessing:
         return convertList
 
     '''
-          Perform Stemming of words.
+        Description: Using PorterStemmer, get the corpus values and perform stemming of words.
+        Return: commonList: []
     '''
 
     def stemming(self):
@@ -217,7 +255,8 @@ class Preprocessing:
         return commonList
 
     '''
-          Perform Stemming of words.
+        Description: Using PorterStemmer, get the tokenization of words and perform stemming of words.
+        Return: commonList: []
     '''
 
     def objectStemming(self):
@@ -228,16 +267,9 @@ class Preprocessing:
                 document[place] = "".join([st.stem(word) for word in data.split()])
         return commonList
 
-    def combineTokenList(self, stemList):
-        out = ""
-        for word in stemList:
-             out = out + " ".join(word)
-        print(out)
-        return out
-
     '''
-        1.getCommonWords
-        2.Perform lemmatization by using WordNetLemmatizer.
+        Description: Using WordNetLemmatizer, get the tokenization of words and perform Lemmatization of words.
+        Return: stemList: [].
     '''
 
     def lemmatization(self, stemList):
@@ -248,9 +280,9 @@ class Preprocessing:
                     [wordnet_lemmatizer.lemmatize(word) for word in word.split()])
         return stemList
 
-    '''
-          1. getCommonWords
-          2. Perform lemmatization by using NLTK Word.
+    '''`
+        Description: Using WordNetLemmatizer, get the tokenization of words and perform Lemmatization of words.
+        Return: lemmatizationList: [].
     '''
 
     def lemmatize(self):
@@ -261,7 +293,8 @@ class Preprocessing:
         return lemmatizationList
 
     '''
-        Perform Stemming 
+        Description: Using PorterStemmer, get the tokenization of words and perform stemming of words.
+        Return: commonList: []
     '''
 
     def perform_stemming(self, lem_list):
@@ -273,9 +306,12 @@ class Preprocessing:
         return lem_list
 
     '''
-          1. Get commonWords from corpus and add them to stopWordsList.
-          2. Preprocess the text_value.
-          3. Apply lemmatization for Tokenized words in the List.
+        Description:
+            1. Get commonWords from corpus and add them to stopWordsList.
+            2. Preprocess the text_value.
+            3. Apply lemmatization for Tokenized words in the List.
+
+        Return: string
     '''
 
     def valuePreprocessing(self, text_value):
@@ -283,7 +319,6 @@ class Preprocessing:
             return ""
         self.documentData.clear()
         pre_proceed_text_value = self.preProcessingText(text_value)
-        print(pre_proceed_text_value)
         self.documentData.append(pre_proceed_text_value)
         tokens_list = self.valueTokenization()
         stem_out_put = self.perform_stemming(tokens_list)
@@ -292,9 +327,10 @@ class Preprocessing:
             return ' '.join(map(str, output))
 
     '''
-          1. List out all sub-directories
-          2. Enumearte all folders and retrieve all xml files.
-          3. Using ET, parse the root object from XML file.
+        Description:
+            1. List out all sub-directories
+            2. Enumearte all folders and retrieve all xml files.
+            3. Using ET, parse the root object from XML file.
     '''
 
     def getRootJsonObjectForCorpus(self):
@@ -313,9 +349,10 @@ class Preprocessing:
                     self.corpusPrepration(root)
 
     '''
-          1. List out all sub-directories
-          2. Enumearte all folders and retrieve all xml files.
-          3. Using ET, parse the root object from XML file.
+        Description:
+            1. List out all sub-directories
+            2. Enumearte all folders and retrieve all xml files.
+            3. Using ET, parse the root object from XML file.
     '''
 
     def getRootJsonObject(self):
@@ -340,10 +377,10 @@ class Preprocessing:
                     self.prepareJsonObject(root, output_file_path)
 
     '''
-          1. It appends the key value pairs in to data dict.
-          2. Prepares a JSON_Object
-          3. Write the JSON object in to output file.
-
+        Description:
+            1. It appends the key value pairs in to data dict.
+            2. Prepares a JSON_Object
+            3. Write the JSON object in to output file.
     '''
 
     def prepareJsonObject(self, root, output_file_path):
@@ -368,10 +405,10 @@ class Preprocessing:
             outfile.write(json_object)
 
     '''
-          1. It appends the key value pairs in to data dict.
-          2. Prepares a JSON_Object
-          3. Prepares corpus(documentData) with all files data.
-
+        Description
+            1. It appends the key value pairs in to data dict.
+            2. Prepares a JSON_Object
+            3. Prepares corpus(documentData) with all files data.
     '''
 
     def corpusPrepration(self, root):
