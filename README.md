@@ -1,4 +1,4 @@
-# TREC-2021 @UNT
+# TREC
 
 **Basic Preprocessing**: 
    
@@ -41,13 +41,37 @@
     def indexing_2021(self, input_path, index_name)
    ```
    
+ 
+ **Basic Evaluation**
+    
+ We are performing the basicraw_out_score_file_path evaluation for retrieving scores we are doing it in 3 steps.
+         
+         1. Retrieve RAW query results.
+         2. Retrieve Query-Expanison results.
+         3. Combine RAW + Query-Expansion results and save it in to single file.
+         
+    
    
+   ```ruby
+   
+        def saveScores(self, index_name, query_file_path, raw_out_score_file_path, exp_out_score_file_path, comb_out_score_file_path):
+            self.getRawQueryscore(query_file_path, raw_out_score_file_path, 'summary', index_name)
+            self.getQueryExapansionscore(query_file_path, exp_out_score_file_path, 'summary', index_name)
+            self.extractNERBaseLineScoresFromFiles(raw_out_score_file_path, exp_out_score_file_path,
+                                               comb_out_score_file_path)
+   ```
+   
+   index_name: Elastic search index name.
+   query_file_path: Query file path
+   raw_out_score_file_path: RAW query results file path
+   exp_out_score_file_path: Exapnsion Query results file path.
+   comb_out_score_file_path: Combine RAW + Query Expansion results path
+   
+**Note**: 
+
+   1. For Query file path, here all the header names should be same \
+   2. We are keeping the Raw Query scores top and Expansion Query scores below, and we are grouping the scores based on the QueryID's. 
   
- **Note**:  
- 1. For Query file path, here all the header names should be same \
- 2.We are keeping the Raw Query scores top and Expansion Query scores below, and we are grouping the scores based on the QueryID's. 
-  
-  def indexing_2021(self, input_path, index_name):
 
 
 
